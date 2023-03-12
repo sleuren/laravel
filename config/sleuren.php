@@ -24,10 +24,7 @@ return [
     */
 
     'environments' => [
-        'production',
-        'staging',
-        'testing',
-        'development',
+        'production'
     ],
 
     /*

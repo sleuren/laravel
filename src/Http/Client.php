@@ -30,7 +30,7 @@ class Client
     public function report($exception)
     {
         try {
-            return $this->getGuzzleHttpClient()->request('POST', 'https://sleuren.com/api/log', [
+            return $this->getGuzzleHttpClient()->request('POST', 'https://www.sleuren.com/api/log', [
                 'headers' => [
                     'Content-Type' => 'application/json',
                     'Accept' => 'application/json',
