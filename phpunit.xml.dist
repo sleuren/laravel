@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         bootstrap="vendor/autoload.php"
+         backupGlobals="true"
+         colors="true"
+         cacheResult="false"
+         processIsolation="false"
+         stopOnFailure="false"
+         beStrictAboutOutputDuringTests="true"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.0/phpunit.xsd"
+         cacheDirectory="build/phpunit"
+         backupStaticProperties="false">
+    <php>
+        <env name="SYMFONY_DEPRECATIONS_HELPER" value="max[self]=0" />
+    </php>
+    <testsuites>
+        <testsuite name="Sleuren for PHP">
+            <directory>tests</directory>
+        </testsuite>
+    </testsuites>
+    <coverage>
+        <include>
+            <directory suffix=".php">src</directory>
+        </include>
+    </coverage>
+    <logging>
+        <junit outputFile="build/report.junit.xml"/>
+    </logging>
+</phpunit>
