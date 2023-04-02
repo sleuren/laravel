@@ -2,15 +2,15 @@
 
 namespace Sleuren;
 
-use Composer\InstalledVersions;
-use Jean85\PrettyVersions;
-use Symfony\Component\Process\Process;
 use Throwable;
 use Sleuren\Http\Client;
+use Jean85\PrettyVersions;
 use Illuminate\Support\Str;
+use Composer\InstalledVersions;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Cache;
+use Symfony\Component\Process\Process;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Session;
 
@@ -368,8 +368,9 @@ class Sleuren
         return Cache::put($exceptionString, $exceptionString, config('sleuren.sleep'));
     }
 
-    private function getGitInfo(){
-        try{
+    private function getGitInfo()
+    {
+        try {
             $git = [
                 'hash' => $this->hash(),
                 'message' => $this->message(),
@@ -377,7 +378,7 @@ class Sleuren
                 'remote' => $this->remote(),
             ];
             return $git;
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             return 'unknown';
         }
     }
@@ -410,7 +411,7 @@ class Sleuren
         return trim($process->getOutput());
     }
 
-    private  function getComposerPackages(): array
+    private function getComposerPackages(): array
     {
         if (empty($this->packages)) {
             foreach ($this->getInstalledPackages() as $package) {
@@ -428,7 +429,7 @@ class Sleuren
     /**
      * @return string[]
      */
-    private  function getInstalledPackages(): array
+    private function getInstalledPackages(): array
     {
         if (class_exists(InstalledVersions::class)) {
             return InstalledVersions::getInstalledPackages();
@@ -443,7 +444,7 @@ class Sleuren
         return [];
     }
 
-    private  function getNpmPackages(): array
+    private function getNpmPackages(): array
     {
         $npmPackages = [];
         if (file_exists(base_path('package.json'))) {

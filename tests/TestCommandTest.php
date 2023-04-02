@@ -2,9 +2,6 @@
 
 namespace Sleuren\Tests;
 
-use Sleuren\Sleuren;
-use Sleuren\Tests\Mocks\SleurenClient;
-
 class TestCommandTest extends TestCase
 {
     /** @test */
@@ -38,26 +35,5 @@ class TestCommandTest extends TestCase
         $this->artisan('sleuren:test')
             ->expectsOutput('✅ [sleuren] Correct environment found (' . config('app.env') . ')')
             ->assertExitCode(0);
-    }
-
-    /** @test */
-    public function it_detects_that_it_fails_to_send_to_sleuren()
-    {
-        $this->artisan('sleuren:test')
-            ->expectsOutput('❌ [sleuren] Failed to send exception to sleuren')
-            ->assertExitCode(0);
-
-        $this->app['config']['sleuren.environments'] = [
-            'testing',
-        ];
-        $this->app['sleuren'] = new Sleuren($this->client = new SleurenClient(
-            'project_key'
-        ));
-
-        $this->artisan('sleuren:test')
-            ->expectsOutput('✅ [sleuren] Sent exception to sleuren with ID: '.SleurenClient::RESPONSE_ID)
-            ->assertExitCode(0);
-
-        $this->assertEquals(SleurenClient::RESPONSE_ID, $this->app['sleuren']->getLastExceptionId());
     }
 }

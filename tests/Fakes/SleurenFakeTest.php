@@ -5,7 +5,7 @@ namespace Sleuren\Tests\Fakes;
 use Sleuren\Tests\TestCase;
 use Sleuren\Facade as SleurenFacade;
 
-class SleurenTest extends TestCase
+class SleurenFakeTest extends TestCase
 {
     public function setUp(): void
     {

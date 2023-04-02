@@ -1,8 +1,8 @@
 {
     "name": "sleuren/laravel",
     "type": "library",
-    "description": "Laravel 5.x/6.x/7.x/8.x/9.x bug tracker.",
-    "homepage": "http://sleuren.com",
+    "description": "Official Sleuren SDK for Laravel",
+    "homepage": "https://sleuren.com",
     "keywords": [
         "laravel",
         "log",
@@ -18,7 +18,7 @@
     "require": {
         "php": "^7.4 || ^8.0",
         "guzzlehttp/guzzle": "^6.0.2 || ^7.0",
-        "illuminate/support": "^5.0 || ^6.0 || ^7.0 || ^8.0 || ^9.0 || ^10.0",
+        "illuminate/support": "^6.0 || ^7.0 || ^8.0 || ^9.0 || ^10.0",
         "nesbot/carbon": "^2.62.1",
         "jean85/pretty-package-versions": "^1.5|^2.0.4"
     },

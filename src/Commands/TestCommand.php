@@ -3,6 +3,7 @@
 namespace Sleuren\Commands;
 
 use Exception;
+use Sleuren\Sleuren;
 use Illuminate\Console\Command;
 
 class TestCommand extends Command
@@ -14,19 +15,23 @@ class TestCommand extends Command
     public function handle()
     {
         try {
-            // Test proc_open function availability
-            try {
-                proc_open("", [], $pipes);
-            } catch (\Throwable $exception) {
-                $this->warn("❌ proc_open function disabled.");
-                return;
-            }
-
-            $this->checkKey();
-            $this->checkLogger();
-
             /** @var Sleuren $sleuren */
             $sleuren = app('sleuren');
+
+            if (config('sleuren.project_key')) {
+                $this->info('✅ [sleuren] Found project key');
+            } else {
+                $this->error('❌ [sleuren] Could not find your project key, set this in your .env');
+                $this->info('More information on setting your project key: https://www.sleuren.com/docs/how-to-use/installation');
+            }
+
+            if (in_array(config('app.env'), config('sleuren.environments'))) {
+                $this->info('✅ [sleuren] Correct environment found (' . config('app.env') . ')');
+            } else {
+                $this->error('❌ [sleuren] Environment (' . config('app.env') . ') not allowed to send errors to sleuren, set this in your config');
+                $this->info('More information about environment configuration: https://www.sleuren.com/docs/how-to-use/installation');
+            }
+
             $response = $sleuren->handle(
                 $this->generateException()
             );
@@ -42,51 +47,12 @@ class TestCommand extends Command
             $this->error("❌ [Sleuren] {$ex->getMessage()}");
         }
     }
-
-    protected function checkKey(): self
-    {
-        $message = empty($this->config->get('sleuren.project_key'))
-            ? '❌ Sleuren key not specified. Make sure you specify a value in the `key` key of the `sleuren` config file.'
-            : '✅ Sleuren key specified';
-
-        $this->info($message);
-
-        return $this;
-    }
-
-    public function checkLogger(): self
-    {
-        $defaultLogChannel = $this->config->get('logging.default');
-
-        $activeStack = $this->config->get("logging.channels.{$defaultLogChannel}");
-
-        if (is_null($activeStack)) {
-            $this->info("❌ The default logging channel `{$defaultLogChannel}` is not configured in the `logging` config file");
-        }
-
-        if (! isset($activeStack['channels']) || ! in_array('sleuren', $activeStack['channels'])) {
-            $this->info("❌ The logging channel `{$defaultLogChannel}` does not contain the 'sleuren' channel");
-        }
-
-        if (is_null($this->config->get('logging.channels.sleuren'))) {
-            $this->info('❌ There is no logging channel named `sleuren` in the `logging` config file');
-        }
-
-        if ($this->config->get('logging.channels.sleuren.driver') !== 'sleuren') {
-            $this->info('❌ The `sleuren` logging channel defined in the `logging` config file is not set to `sleuren`.');
-        }
-
-        $this->info('✅ The Sleuren logging driver was configured correctly.');
-
-        return $this;
-    }
-
     public function generateException(): ?Exception
     {
         try {
             throw new Exception($this->argument('exception') ?? 'This is an exception to test if the integration with Sleuren works.');
         } catch (Exception $ex) {
-            return $ex->getMessage();
+            return $ex;
         }
     }
 }
