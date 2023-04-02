@@ -1,0 +1,64 @@
+{
+    "name": "sleuren/laravel",
+    "type": "library",
+    "description": "Laravel 5.x/6.x/7.x/8.x/9.x bug tracker.",
+    "homepage": "http://sleuren.com",
+    "keywords": [
+        "laravel",
+        "log",
+        "error",
+        "logging",
+        "bug",
+        "tracker",
+        "error-monitoring",
+        "error-handler",
+        "crash-reporting",
+        "crash-reports"
+    ],
+    "require": {
+        "php": "^7.4 || ^8.0",
+        "guzzlehttp/guzzle": "^6.0.2 || ^7.0",
+        "illuminate/support": "^5.0 || ^6.0 || ^7.0 || ^8.0 || ^9.0 || ^10.0",
+        "nesbot/carbon": "^2.62.1",
+        "jean85/pretty-package-versions": "^1.5|^2.0.4"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.4",
+        "mockery/mockery": "^1.3.3 || ^1.4.2",
+        "orchestra/testbench": "^4.0 || ^5.0 || ^6.0 || ^7.0 || ^8.0",
+        "phpunit/phpunit": "^8.5.23 || ^9.5.12 || ^10.0.9"
+    },
+    "autoload": {
+        "psr-4": {
+            "Sleuren\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Sleuren\\Tests\\": "tests"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit",
+        "test-coverage": "vendor/bin/phpunit --coverage-html coverage",
+        "format": "vendor/bin/php-cs-fixer fix"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Sleuren\\ServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Sleuren",
+            "email": "hello@sleuren.com",
+            "homepage": "https://sleuren.com",
+            "role": "Owner"
+        }
+    ]
+}
