@@ -160,7 +160,7 @@ class Sleuren
         $data['line'] = $exception->getLine();
         $data['file'] = $exception->getFile();
         $data['class'] = get_class($exception);
-        $data['release'] = trim(exec('git --git-dir ' . base_path('.git') . ' log --pretty="%h" -n1 HEAD'));
+        $data['release'] = $this->command('git --git-dir ' . base_path('.git') . ' log --pretty="%h" -n1 HEAD');
 
         $data['storage'] = [
             'SERVER' => [
@@ -175,14 +175,17 @@ class Sleuren
                 'OS_NAME' => php_uname('s'),
                 'OS_VERSION' => php_uname('r'),
                 'OS_ARCH' => php_uname('m'),
-                'FRAMEWORK' => [
-                    'name' => 'Laravel',
-                    'version' => app()->version(),
-                ],
             ],
-            'PACKAGES' => $this->getComposerPackages(),
+            'FRAMEWORK' => [
+                'name' => 'Laravel',
+                'version' => app()->version(),
+            ],
+            'SDK' => [
+                'name' => 'sleuren/laravel',
+                'version' => '1.0.1',
+            ],
+            'COMPOSER_PACKAGES' => $this->getComposerPackages(),
             'NPM_PACKAGES' => $this->getNpmPackages(),
-            'packagesCount' => count($this->getComposerPackages() + $this->getNpmPackages()),
             'GIT' => $this->getGitInfo(),
             'OLD' => $this->filterVariables(Request::hasSession() ? Request::old() : []),
             'COOKIE' => $this->filterVariables(Request::cookie()),
@@ -192,7 +195,6 @@ class Sleuren
         ];
 
         $data['storage'] = array_filter($data['storage']);
-
         $count = 5;
         $lines = file($data['file']);
         $data['executor'] = [];
@@ -206,8 +208,7 @@ class Sleuren
         }
         $data['executor'] = array_filter($data['executor']);
 
-        // Get project version
-        $data['project_version'] = shell_exec("git log -1 --pretty=format:'%h' --abbrev-commit");
+        $data['project_version'] = $this->command("git log -1 --pretty=format:'%h' --abbrev-commit");
 
         // to make symfony exception more readable
         if ($data['class'] == 'Symfony\Component\Debug\Exception\FatalErrorException') {
@@ -381,7 +382,7 @@ class Sleuren
             ];
             return $git;
         } catch (\Exception $e) {
-            return 'unknown';
+            return [];
         }
     }
 
