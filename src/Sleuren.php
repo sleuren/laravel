@@ -25,6 +25,8 @@ class Sleuren
     /** @var null|string */
     private $lastExceptionId;
 
+    private $baseDir;
+
     /**
      * @param Client $client
      */
