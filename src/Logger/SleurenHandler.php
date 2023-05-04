@@ -17,7 +17,7 @@ class SleurenHandler extends AbstractProcessingHandler
      * @param int $level
      * @param bool $bubble
      */
-    public function __construct(Sleuren $sleuren, $level = Logger::DEBUG, bool $bubble = true)
+    public function __construct(Sleuren $sleuren, $level = Logger::ERROR, bool $bubble = true)
     {
         $this->sleuren = $sleuren;
 
