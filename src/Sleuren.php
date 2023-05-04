@@ -154,8 +154,10 @@ class Sleuren
         $data['method'] = Request::method();
         $data['route'] = Request::path();
         $data['fullUrl'] = Request::fullUrl();
-        $data['controller'] = Request::route()->getAction()['controller'] ?? '-';
-        $data['middleware'] = implode(',', Request::route()->gatherMiddleware()) ?? '-';
+        if (Request::route()) {
+        	$data['controller'] = Request::route()->getAction()['controller'] ?? '-';
+            $data['middleware'] = implode(',', Request::route()->gatherMiddleware()) ?? '-';
+        }
         $data['exception'] = $exception->getMessage() ?? '-';
         $data['line'] = $exception->getLine();
         $data['file'] = $exception->getFile();

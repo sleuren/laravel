@@ -71,3 +71,12 @@ SLEUREN_KEY=
 > **SLEUREN_KEY:** is your Project API key which you've received when creating a project.
 
 Get the variables from your [Sleuren dashboard](https://sleuren.com/dashboard).
+
+Run this in your terminal to test if everything is working:
+```bash
+php artisan sleuren:test
+```
+
+## Documentation
+
+For more information, see the [documentation](https://help.sleuren.com).
