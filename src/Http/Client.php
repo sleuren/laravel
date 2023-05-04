@@ -40,7 +40,6 @@ class Client
                     'project' => $this->project,
                     'additional' => [],
                 ], $exception),
-                'verify' => config('sleuren.verify_ssl'),
             ]);
         } catch (\GuzzleHttp\Exception\RequestException $e) {
             return $e->getResponse();

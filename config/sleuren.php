@@ -18,12 +18,14 @@ return [
     | Environment setting
     |--------------------------------------------------------------------------
     |
-    | This setting determines if the exception should be send over or not.
+    | This setting determines if the exception should be sent over or not.
     |
     */
 
     'environments' => [
         'production',
+        'development',
+        'staging',
     ],
 
     /*
@@ -58,7 +60,6 @@ return [
     | Filter out these variables before sending them to sleuren
     |
     */
-
     'blacklist' => [
         '*authorization*',
         '*password*',
@@ -66,22 +67,11 @@ return [
         '*auth*',
         '*verification*',
         '*credit_card*',
-        'cardToken', // mollie card token
+        'cardToken',
         '*cvv*',
         '*iban*',
         '*name*',
         '*email*'
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Verify SSL setting
-    |--------------------------------------------------------------------------
-    |
-    | Enables / disables the SSL verification when sending exceptions to sleuren
-    | Never turn SSL verification off on production instances
-    |
-    */
-    'verify_ssl' => env('LB_VERIFY_SSL', true),
+    ]
 
 ];

@@ -4,9 +4,7 @@ namespace Sleuren;
 
 use Throwable;
 use Sleuren\Http\Client;
-use Jean85\PrettyVersions;
 use Illuminate\Support\Str;
-use Composer\InstalledVersions;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Cache;
@@ -49,9 +47,7 @@ class Sleuren
         if ($this->isSkipEnvironment()) {
             return false;
         }
-
         $data = $this->getExceptionData($exception);
-
         if ($this->isSkipException($data['class'])) {
             return false;
         }
@@ -152,16 +148,22 @@ class Sleuren
         $data = [];
 
         $data['environment'] = App::environment();
+        $data['locale'] = App::getLocale();
         $data['host'] = Request::server('SERVER_NAME');
+        $data['ip'] = Request::ip();
         $data['method'] = Request::method();
+        $data['route'] = Request::path();
         $data['fullUrl'] = Request::fullUrl();
+        $data['controller'] = Request::route()->getAction()['controller'] ?? '-';
+        $data['middleware'] = implode(',', Request::route()->gatherMiddleware()) ?? '-';
         $data['exception'] = $exception->getMessage() ?? '-';
-        $data['error'] = $exception->getTraceAsString();
         $data['line'] = $exception->getLine();
         $data['file'] = $exception->getFile();
         $data['class'] = get_class($exception);
         $data['release'] = $this->command('git --git-dir ' . base_path('.git') . ' log --pretty="%h" -n1 HEAD');
-
+        $data['project_version'] = $this->command("git log -1 --pretty=format:'%h' --abbrev-commit");
+        $data['project_branch'] = $this->command('git rev-parse --abbrev-ref HEAD');
+        $data['project_tag'] = $this->command('git describe --tags --abbrev=0');
         $data['storage'] = [
             'SERVER' => [
                 'USER' => Request::server('USER'),
@@ -191,9 +193,8 @@ class Sleuren
             'COOKIE' => $this->filterVariables(Request::cookie()),
             'SESSION' => $this->filterVariables(Request::hasSession() ? Session::all() : []),
             'HEADERS' => $this->filterVariables(Request::header()),
-            'PARAMETERS' => $this->filterVariables($this->filterParameterValues(Request::all()))
+            'PARAMETERS' => $this->filterVariables($this->filterParameterValues(Request::all())),
         ];
-
         $data['storage'] = array_filter($data['storage']);
         $count = 5;
         $lines = file($data['file']);
@@ -207,17 +208,13 @@ class Sleuren
             $data['executor'][] = $this->getLineInfo($lines, $data['line'], $i);
         }
         $data['executor'] = array_filter($data['executor']);
-
-        $data['project_version'] = $this->command("git log -1 --pretty=format:'%h' --abbrev-commit");
-
-        // to make symfony exception more readable
         if ($data['class'] == 'Symfony\Component\Debug\Exception\FatalErrorException') {
             preg_match("~^(.+)' in ~", $data['exception'], $matches);
             if (isset($matches[1])) {
                 $data['exception'] = $matches[1];
             }
         }
-
+        $data['error'] = $data['error'] = $exception->getTraceAsString();
         return $data;
     }
 
@@ -408,43 +405,9 @@ class Sleuren
 
     private function command($command)
     {
-        $process = Process::fromShellCommandline($command, $this->baseDir)->setTimeout(1);
-
+        $process = Process::fromShellCommandline($command, $this->baseDir)->setTimeout(3);
         $process->run();
         return trim($process->getOutput());
-    }
-
-    private function getComposerPackages(): array
-    {
-        if (empty($this->packages)) {
-            foreach ($this->getInstalledPackages() as $package) {
-                try {
-                    $this->packages[$package] = PrettyVersions::getVersion($package)->getPrettyVersion();
-                } catch (\Throwable $exception) {
-                    continue;
-                }
-            }
-        }
-
-        return $this->packages;
-    }
-
-    /**
-     * @return string[]
-     */
-    private function getInstalledPackages(): array
-    {
-        if (class_exists(InstalledVersions::class)) {
-            return InstalledVersions::getInstalledPackages();
-        }
-
-        if (class_exists(Versions::class)) {
-            // BC layer for Composer 1, using a transient dependency
-            return array_keys(Versions::VERSIONS);
-        }
-
-        // this should not happen
-        return [];
     }
 
     private function getNpmPackages(): array
@@ -452,7 +415,18 @@ class Sleuren
         $npmPackages = [];
         if (file_exists(base_path('package.json'))) {
             $npmPackages = json_decode(file_get_contents(base_path('package.json')), true)['devDependencies'] ?? [];
+            $npmPackages = array_merge($npmPackages, json_decode(file_get_contents(base_path('package.json')), true)['dependencies'] ?? []);
         }
         return $npmPackages;
+    }
+
+    private function getComposerPackages(): array
+    {
+        $composerPackages = [];
+        if (file_exists(base_path('composer.json'))) {
+            $composerPackages = json_decode(file_get_contents(base_path('composer.json')), true)['require-dev'] ?? [];
+            $composerPackages = array_merge($composerPackages, json_decode(file_get_contents(base_path('composer.json')), true)['require'] ?? []);
+        }
+        return $composerPackages;
     }
 }
