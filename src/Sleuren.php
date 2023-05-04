@@ -184,7 +184,7 @@ class Sleuren
             ],
             'SDK' => [
                 'name' => 'sleuren/laravel',
-                'version' => '1.0.1',
+                'version' => '1.1.0',
             ],
             'COMPOSER_PACKAGES' => $this->getComposerPackages(),
             'NPM_PACKAGES' => $this->getNpmPackages(),
