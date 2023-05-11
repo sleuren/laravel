@@ -11,6 +11,10 @@ use Illuminate\Support\Facades\Cache;
 use Symfony\Component\Process\Process;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Session;
+use Sleuren\Recorders\JobRecorder\JobRecorder;
+use Sleuren\Recorders\LogRecorder\LogRecorder;
+use Sleuren\Recorders\DumpRecorder\DumpRecorder;
+use Sleuren\Recorders\QueryRecorder\QueryRecorder;
 
 class Sleuren
 {
@@ -25,6 +29,12 @@ class Sleuren
 
     private $baseDir;
 
+    protected QueryRecorder $queryRecorder;
+    protected LogRecorder $logRecorder;
+    protected JobRecorder $jobRecorder;
+    protected DumpRecorder $dumpRecorder;
+
+
     /**
      * @param Client $client
      */
@@ -32,9 +42,15 @@ class Sleuren
     {
         $this->client = $client;
 
+        $this->queryRecorder = app(QueryRecorder::class);
+        $this->logRecorder = app(LogRecorder::class);
+        $this->jobRecorder = app(JobRecorder::class);
+        $this->dumpRecorder = app(DumpRecorder::class);
+
         $this->blacklist = array_map(function ($blacklist) {
             return strtolower($blacklist);
         }, config('sleuren.blacklist', []));
+
     }
 
     /**
@@ -102,7 +118,6 @@ class Sleuren
         if (config('sleuren.sleep') !== 0) {
             $this->addExceptionToSleep($data);
         }
-
         return $response;
     }
 
@@ -145,8 +160,8 @@ class Sleuren
      */
     public function getExceptionData(Throwable $exception)
     {
-        $data = [];
 
+        $data = [];
         $data['environment'] = App::environment();
         $data['locale'] = App::getLocale();
         $data['host'] = Request::server('SERVER_NAME');
@@ -155,7 +170,7 @@ class Sleuren
         $data['route'] = Request::path();
         $data['fullUrl'] = Request::fullUrl();
         if (Request::route()) {
-        	$data['controller'] = Request::route()->getAction()['controller'] ?? '-';
+            $data['controller'] = Request::route()->getAction()['controller'] ?? '-';
             $data['middleware'] = implode(',', Request::route()->gatherMiddleware()) ?? '-';
         }
         $data['exception'] = $exception->getMessage() ?? '-';
@@ -186,7 +201,7 @@ class Sleuren
             ],
             'SDK' => [
                 'name' => 'sleuren/laravel',
-                'version' => '1.1.0',
+                'version' => '1.1.1',
             ],
             'COMPOSER_PACKAGES' => $this->getComposerPackages(),
             'NPM_PACKAGES' => $this->getNpmPackages(),
@@ -196,6 +211,10 @@ class Sleuren
             'SESSION' => $this->filterVariables(Request::hasSession() ? Session::all() : []),
             'HEADERS' => $this->filterVariables(Request::header()),
             'PARAMETERS' => $this->filterVariables($this->filterParameterValues(Request::all())),
+            'logs' => $this->logRecorder->getLogMessages(),
+            'jobs' => $this->jobRecorder->getJob(),
+            'queries' => $this->queryRecorder->getQueries(),
+            'dump' => $this->dumpRecorder->getDumps(),
         ];
         $data['storage'] = array_filter($data['storage']);
         $count = 5;

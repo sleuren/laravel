@@ -1,4 +1,8 @@
 <?php
+use Sleuren\Recorders\JobRecorder\JobRecorder;
+use Sleuren\Recorders\LogRecorder\LogRecorder;
+use Sleuren\Recorders\DumpRecorder\DumpRecorder;
+use Sleuren\Recorders\QueryRecorder\QueryRecorder;
 
 return [
     /*
@@ -72,6 +76,22 @@ return [
         '*iban*',
         '*name*',
         '*email*'
-    ]
+    ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Recorders
+    |--------------------------------------------------------------------------
+    |
+    | Sleuren registers a couple of recorders when it is enabled. Below you may
+    | specify a recorders will be used to record specific events.
+    |
+    */
+
+    'recorders' => [
+        DumpRecorder::class,
+        JobRecorder::class,
+        LogRecorder::class,
+        QueryRecorder::class,
+    ]
 ];
