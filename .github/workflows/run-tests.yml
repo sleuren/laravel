@@ -20,6 +20,8 @@ jobs:
                 include:
                     - laravel: ^10.1.0
                       testbench: 8.*
+                    - laravel: ^9.51.0
+                      testbench: 7.*
                     - laravel: ^8.83.27
                       testbench: 6.*
                 exclude:
