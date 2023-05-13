@@ -149,7 +149,7 @@ class SleurenTest extends TestCase
         $this->assertSame('http://localhost', $data['fullUrl']);
         $this->assertSame('it_can_get_formatted_exception_data', $data['message']);
 
-        $this->assertCount(18, $data);
+        $this->assertCount(9, $data);
     }
 
     /** @test */
