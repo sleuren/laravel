@@ -36,7 +36,7 @@ class DumpRecorder
 
             $originalHandler = VarDumper::setHandler(fn ($dumpedVariable) => $multiDumpHandler->dump($dumpedVariable));
 
-            $multiDumpHandler?->addHandler($originalHandler);
+            $multiDumpHandler->addHandler($originalHandler);
 
             $multiDumpHandler->addHandler(fn ($var) => (new DumpHandler($this))->dump($var));
         }
