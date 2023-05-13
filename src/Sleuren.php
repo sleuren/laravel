@@ -28,7 +28,7 @@ class Sleuren
     /** @var string */
     const NAME = 'sleuren/laravel';
     /** @var string */
-    const VERSION = '1.1.1';
+    const VERSION = '1.1.2';
     /** @var null|string */
     private $baseDir;
     /** @var array */
