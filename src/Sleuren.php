@@ -11,29 +11,34 @@ use Illuminate\Support\Facades\Cache;
 use Symfony\Component\Process\Process;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Session;
-use Sleuren\Recorders\JobRecorder\JobRecorder;
-use Sleuren\Recorders\LogRecorder\LogRecorder;
-use Sleuren\Recorders\DumpRecorder\DumpRecorder;
+
 use Sleuren\Recorders\QueryRecorder\QueryRecorder;
+use Sleuren\Recorders\LogRecorder\LogRecorder;
+use Sleuren\Recorders\JobRecorder\JobRecorder;
+use Sleuren\Recorders\DumpRecorder\DumpRecorder;
 
 class Sleuren
 {
     /** @var Client */
     private $client;
-
     /** @var array */
     private $blacklist = [];
-
     /** @var null|string */
     private $lastExceptionId;
-
+    /** @var string */
+    const NAME = 'sleuren/laravel';
+    /** @var string */
+    const VERSION = '1.1.1';
+    /** @var null|string */
     private $baseDir;
-
+    /** @var array */
     protected QueryRecorder $queryRecorder;
+    /** @var array */
     protected LogRecorder $logRecorder;
+    /** @var array */
     protected JobRecorder $jobRecorder;
+    /** @var array */
     protected DumpRecorder $dumpRecorder;
-
 
     /**
      * @param Client $client
@@ -158,73 +163,87 @@ class Sleuren
      * @param Throwable $exception
      * @return array
      */
-    public function getExceptionData(Throwable $exception)
+    public function getExceptionData(Throwable $exception, $data = [])
     {
-
-        $data = [];
-        $data['environment'] = App::environment();
-        $data['locale'] = App::getLocale();
-        $data['host'] = Request::server('SERVER_NAME');
-        $data['ip'] = Request::ip();
-        $data['method'] = Request::method();
-        $data['route'] = Request::path();
-        $data['fullUrl'] = Request::fullUrl();
+        $data['fullUrl']       = Request::fullUrl();
+        $data['previousUrl']   = Request::server('HTTP_REFERER');
         if (Request::route()) {
-            $data['controller'] = Request::route()->getAction()['controller'] ?? '-';
-            $data['middleware'] = implode(',', Request::route()->gatherMiddleware()) ?? '-';
+            $data['route'] = [
+                'name'         => Request::route()->getName(),
+                'uri'          => Request::route()->uri(),
+                'method'       => Request::method(),
+                'action'       => Request::route()->getAction(),
+                'parameters'   => Request::route()->parameters(),
+            ];
         }
-        $data['exception'] = $exception->getMessage() ?? '-';
-        $data['line'] = $exception->getLine();
-        $data['file'] = $exception->getFile();
-        $data['class'] = get_class($exception);
-        $data['release'] = $this->command('git --git-dir ' . base_path('.git') . ' log --pretty="%h" -n1 HEAD');
-        $data['project_version'] = $this->command("git log -1 --pretty=format:'%h' --abbrev-commit");
-        $data['project_branch'] = $this->command('git rev-parse --abbrev-ref HEAD');
-        $data['project_tag'] = $this->command('git describe --tags --abbrev=0');
+        $data['message'] = $exception->getMessage() ?? '-';
+        $data['file']    = $exception->getFile();
+        $data['line']    = $exception->getLine();
+        $data['class']   = get_class($exception);
         $data['storage'] = [
             'SERVER' => [
-                'USER' => Request::server('USER'),
+                'REQUEST_METHOD'  => Request::server('REQUEST_METHOD'),
                 'HTTP_USER_AGENT' => Request::server('HTTP_USER_AGENT'),
                 'SERVER_PROTOCOL' => Request::server('SERVER_PROTOCOL'),
                 'SERVER_SOFTWARE' => Request::server('SERVER_SOFTWARE'),
-                'SERVER_NAME' => Request::server('SERVER_NAME'),
-                'SERVER_ADMIN' => Request::server('SERVER_ADMIN'),
-                'PHP_VERSION' => PHP_VERSION,
-                'KERNEL' => php_uname('a'),
-                'OS_NAME' => php_uname('s'),
-                'OS_VERSION' => php_uname('r'),
-                'OS_ARCH' => php_uname('m'),
+                'SERVER_NAME'     => Request::server('SERVER_NAME'),
+                'SERVER_ADMIN'    => Request::server('SERVER_ADMIN'),
+                'REQUEST_TIME'    => Request::server('REQUEST_TIME'),
+                'USER'            => Request::server('USER'),
+                'IP'              => Request::server('REMOTE_ADDR'),
+                'PORT'            => Request::server('REMOTE_PORT'),
+                'KERNEL'          => php_uname('a'),
+                'OS_NAME'         => php_uname('s'),
+                'OS_VERSION'      => php_uname('r'),
+                'OS_ARCH'         => php_uname('m'),
             ],
             'FRAMEWORK' => [
-                'name' => 'Laravel',
+                'name'    => 'Laravel',
                 'version' => app()->version(),
+                'locale'  => app()->getLocale(),
+                'debug'   => config('app.debug') ? 'true' : 'false',
+                'env'     => config('app.env'),
+                'cli'     => $this->runningInConsole(),
             ],
             'SDK' => [
-                'name' => 'sleuren/laravel',
-                'version' => '1.1.1',
+                'name'    => Sleuren::NAME,
+                'version' => Sleuren::VERSION,
             ],
+            'PHP' => [
+                'version'      => PHP_VERSION,
+                'extensions'   => get_loaded_extensions(),
+                'memory_limit' => ini_get('memory_limit'),
+                'timezone'     => date_default_timezone_get(),
+                'sapi'         => php_sapi_name(),
+            ],
+            'PROJECT' => [
+                'release' => $this->command('git --git-dir ' . base_path('.git') . ' log --pretty="%h" -n1 HEAD'),
+                'version' => $this->command("git log -1 --pretty=format:'%h' --abbrev-commit"),
+                'branch'  => $this->command('git rev-parse --abbrev-ref HEAD'),
+                'tag'     => $this->command('git describe --tags --abbrev=0'),
+                'path'    => base_path(),
+                'name'    => config('app.name'),
+            ],
+            'OLD'          => $this->filterVariables(Request::hasSession() ? Request::old() : []),
+            'GIT'          => $this->getGitInfo(),
+            'COOKIE'       => $this->filterVariables(Request::cookie()),
+            'SESSION'      => $this->filterVariables(Request::hasSession() ? Session::all() : []),
+            'HEADERS'      => $this->filterVariables(Request::header()),
+            'PARAMETERS'   => $this->filterVariables($this->filterParameterValues(Request::all())),
             'COMPOSER_PACKAGES' => $this->getComposerPackages(),
             'NPM_PACKAGES' => $this->getNpmPackages(),
-            'GIT' => $this->getGitInfo(),
-            'OLD' => $this->filterVariables(Request::hasSession() ? Request::old() : []),
-            'COOKIE' => $this->filterVariables(Request::cookie()),
-            'SESSION' => $this->filterVariables(Request::hasSession() ? Session::all() : []),
-            'HEADERS' => $this->filterVariables(Request::header()),
-            'PARAMETERS' => $this->filterVariables($this->filterParameterValues(Request::all())),
-            'logs' => $this->logRecorder->getLogMessages(),
-            'jobs' => $this->jobRecorder->getJob(),
-            'queries' => $this->queryRecorder->getQueries(),
-            'dump' => $this->dumpRecorder->getDumps(),
+            'LOGS'         => $this->logRecorder->getLogMessages(),
+            'JOBS'         => $this->jobRecorder->getJob(),
+            'QUERIES'      => $this->queryRecorder->getQueries(),
+            'DUMP'         => $this->dumpRecorder->getDumps(),
         ];
         $data['storage'] = array_filter($data['storage']);
         $count = 5;
         $lines = file($data['file']);
         $data['executor'] = [];
-
         if (count($lines) < $count) {
             $count = count($lines) - $data['line'];
         }
-
         for ($i = -1 * abs($count); $i <= abs($count); $i++) {
             $data['executor'][] = $this->getLineInfo($lines, $data['line'], $i);
         }
@@ -342,7 +361,7 @@ class Sleuren
      */
     private function createExceptionString(array $data)
     {
-        return 'sleuren.' . Str::slug($data['host'] . '_' . $data['method'] . '_' . $data['exception'] . '_' . $data['line'] . '_' . $data['file'] . '_' . $data['class']);
+        return 'sleuren.' . Str::slug($data['storage']['SERVER']['SERVER_NAME'] . '_' . $data['message'] . '_' . $data['line'] . '_' . $data['file'] . '_' . $data['class']);
     }
 
     /**
@@ -449,5 +468,13 @@ class Sleuren
             $composerPackages = array_merge($composerPackages, json_decode(file_get_contents(base_path('composer.json')), true)['require'] ?? []);
         }
         return $composerPackages;
+    }
+
+    private function runningInConsole(): bool
+    {
+        if (isset($_ENV['APP_RUNNING_IN_CONSOLE'])) {
+            return $_ENV['APP_RUNNING_IN_CONSOLE'] === 'true';
+        }
+        return in_array(php_sapi_name(), ['cli', 'phpdb']);
     }
 }
