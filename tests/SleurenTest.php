@@ -107,9 +107,18 @@ class SleurenTest extends TestCase
     /** @test */
     public function it_can_check_if_is_a_sleeping_cache_exception()
     {
-        $data = ['host' => 'localhost', 'method' => 'GET', 'exception' => 'it_can_check_if_is_a_sleeping_cache_exception', 'line' => 2, 'file' => '/tmp/Sleuren/tests/SleurenTest.php', 'class' => 'Exception'];
+        $data = [
+            'storage' => [
+                'SERVER' => [
+                    'SERVER_NAME' => 'localhost',
+                ],
+                'FRAMEWORK' => [
+                    'env' => 'testing',
+                ],
+            ], 'message' => 'it_can_check_if_is_a_sleeping_cache_exception', 'line' => 2, 'file' => '/tmp/Sleuren/tests/SleurenTest.php', 'class' => 'Exception'
+        ];
 
-        Carbon::setTestNow('2019-10-12 13:30:00');
+        Carbon::setTestNow('2019-10-12 13:29:00');
 
         $this->assertFalse($this->sleuren->isSleepingException($data));
 
@@ -135,11 +144,10 @@ class SleurenTest extends TestCase
             'it_can_get_formatted_exception_data'
         ));
 
-        $this->assertSame('testing', $data['environment']);
-        $this->assertSame('localhost', $data['host']);
-        $this->assertSame('GET', $data['method']);
+        $this->assertSame('testing', $data['storage']['FRAMEWORK']['env']);
+        $this->assertSame('localhost', $data['storage']['SERVER']['SERVER_NAME']);
         $this->assertSame('http://localhost', $data['fullUrl']);
-        $this->assertSame('it_can_get_formatted_exception_data', $data['exception']);
+        $this->assertSame('it_can_get_formatted_exception_data', $data['message']);
 
         $this->assertCount(18, $data);
     }
