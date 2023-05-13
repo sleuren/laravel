@@ -12,10 +12,10 @@ use Symfony\Component\Process\Process;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Session;
 
-use Sleuren\Recorders\QueryRecorder\QueryRecorder;
-use Sleuren\Recorders\LogRecorder\LogRecorder;
 use Sleuren\Recorders\JobRecorder\JobRecorder;
+use Sleuren\Recorders\LogRecorder\LogRecorder;
 use Sleuren\Recorders\DumpRecorder\DumpRecorder;
+use Sleuren\Recorders\QueryRecorder\QueryRecorder;
 
 class Sleuren
 {
@@ -82,7 +82,7 @@ class Sleuren
             $data['file'] = $customData['file'];
             $data['file_type'] = $fileType;
             $data['error'] = $customData['message'];
-            $data['exception'] = $customData['stack'];
+            $data['message'] = $customData['stack'];
             $data['line'] = $customData['line'];
             $data['class'] = null;
 
