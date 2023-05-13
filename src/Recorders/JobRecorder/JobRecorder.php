@@ -19,11 +19,15 @@ use Illuminate\Queue\Events\JobExceptionOccurred;
 class JobRecorder
 {
     protected ?Job $job = null;
+    protected Application $app;
+    protected int $maxChainedJobReportingDepth = 5;
 
     public function __construct(
-        protected Application $app,
-        protected int $maxChainedJobReportingDepth = 5,
+        Application $app,
+        int $maxChainedJobReportingDepth = 5,
     ) {
+        $this->maxChainedJobReportingDepth = $maxChainedJobReportingDepth;
+        $this->app = $app;
     }
 
     public function start(): self
