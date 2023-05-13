@@ -78,48 +78,38 @@ class Sleuren
         }
 
         if ($fileType == 'javascript') {
-            $data['fullUrl'] = $customData['url'];
-            $data['file'] = $customData['file'];
+            $data['fullUrl']   = $customData['url'];
+            $data['file']      = $customData['file'];
             $data['file_type'] = $fileType;
-            $data['error'] = $customData['message'];
-            $data['message'] = $customData['stack'];
-            $data['line'] = $customData['line'];
-            $data['class'] = null;
-
+            $data['error']     = $customData['message'];
+            $data['message']   = $customData['stack'];
+            $data['line']      = $customData['line'];
+            $data['class']     = null;
             $count = 5;
             $lines = file($data['file']);
             $data['executor'] = [];
 
             for ($i = -1 * abs($count); $i <= abs($count); $i++) {
                 $currentLine = $data['line'] + $i;
-
                 $index = $currentLine - 1;
-
                 if (!array_key_exists($index, $lines)) {
                     continue;
                 }
-
                 $data['executor'][] = [
                     'line_number' => $currentLine,
                     'line' => $lines[$index],
                 ];
             }
-
             $data['executor'] = array_filter($data['executor']);
         }
-
         $rawResponse = $this->logError($data);
-
         if (!$rawResponse) {
             return false;
         }
-
         $response = json_decode($rawResponse->getBody()->getContents());
-
         if (isset($response->id)) {
             $this->setLastExceptionId($response->id);
         }
-
         if (config('sleuren.sleep') !== 0) {
             $this->addExceptionToSleep($data);
         }
@@ -134,7 +124,6 @@ class Sleuren
         if (count(config('sleuren.environments')) == 0) {
             return true;
         }
-
         if (in_array(App::environment(), config('sleuren.environments'))) {
             return false;
         }
