@@ -170,8 +170,6 @@ class SleurenTest extends TestCase
             ],
             'Password' => 'testing',
         ];
-
-
         $this->assertContains('***', $this->sleuren->filterVariables($data));
     }
 

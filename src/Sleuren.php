@@ -441,25 +441,16 @@ class Sleuren
 
     private function getNpmPackages(): array
     {
-        $npmPackages = [];
         if (file_exists(base_path('package.json'))) {
             $npmPackages = json_decode(file_get_contents(base_path('package.json')), true)['dependencies'] ?? [];
         }
-        return $npmPackages;
+        return $npmPackages ?? [];
     }
 
     private function getComposerPackages(): array
     {
-        $packages = [];
         if (file_exists(base_path('composer.json'))) {
-            $packages = json_decode(file_get_contents(base_path('composer.json')), true)['require'] ?? [];
-        }
-        foreach ($packages as $key => $package) {
-            $result = $this->command("composer show $key -a --format=json");
-            if(!empty($result)) {
-                $data = json_decode($result, true);
-                $composerPackages[] = ['name' => $data['name'], 'description' => $data['description'], 'current' => $package, 'latest' => \Composer\InstalledVersions::getPrettyVersion($data['name'])];
-            }
+            $composerPackages = json_decode(file_get_contents(base_path('composer.json')), true)['require'] ?? [];
         }
         return $composerPackages ?? [];
     }
