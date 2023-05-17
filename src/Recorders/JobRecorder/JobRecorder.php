@@ -20,11 +20,11 @@ class JobRecorder
 {
     protected ?Job $job = null;
     protected Application $app;
-    protected int $maxChainedJobReportingDepth = 5;
+    protected int $maxChainedJobReportingDepth = 200;
 
     public function __construct(
         Application $app,
-        int $maxChainedJobReportingDepth = 5
+        int $maxChainedJobReportingDepth = 200
     ) {
         $this->maxChainedJobReportingDepth = $maxChainedJobReportingDepth;
         $this->app = $app;

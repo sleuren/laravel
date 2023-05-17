@@ -15,11 +15,13 @@ class LogRecorder
 
     protected ?int $maxLogs;
 
-    public function __construct(Application $app, ?int $maxLogs = null)
-    {
-        $this->app = $app;
 
+    public function __construct(
+        Application $app,
+        int $maxLogs = 200
+    ) {
         $this->maxLogs = $maxLogs;
+        $this->app = $app;
     }
 
     public function start(): self

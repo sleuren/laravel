@@ -28,7 +28,7 @@ class Sleuren
     /** @var string */
     const NAME = 'sleuren/laravel';
     /** @var string */
-    const VERSION = '1.1.2';
+    const VERSION = '1.1.3';
     /** @var null|string */
     private $baseDir;
     /** @var array */
@@ -434,7 +434,7 @@ class Sleuren
 
     private function command($command)
     {
-        $process = Process::fromShellCommandline($command, $this->baseDir)->setTimeout(3);
+        $process = Process::fromShellCommandline($command, $this->baseDir)->setTimeout(5);
         $process->run();
         return trim($process->getOutput());
     }
@@ -443,20 +443,25 @@ class Sleuren
     {
         $npmPackages = [];
         if (file_exists(base_path('package.json'))) {
-            $npmPackages = json_decode(file_get_contents(base_path('package.json')), true)['devDependencies'] ?? [];
-            $npmPackages = array_merge($npmPackages, json_decode(file_get_contents(base_path('package.json')), true)['dependencies'] ?? []);
+            $npmPackages = json_decode(file_get_contents(base_path('package.json')), true)['dependencies'] ?? [];
         }
         return $npmPackages;
     }
 
     private function getComposerPackages(): array
     {
-        $composerPackages = [];
+        $packages = [];
         if (file_exists(base_path('composer.json'))) {
-            $composerPackages = json_decode(file_get_contents(base_path('composer.json')), true)['require-dev'] ?? [];
-            $composerPackages = array_merge($composerPackages, json_decode(file_get_contents(base_path('composer.json')), true)['require'] ?? []);
+            $packages = json_decode(file_get_contents(base_path('composer.json')), true)['require'] ?? [];
         }
-        return $composerPackages;
+        foreach ($packages as $key => $package) {
+            $result = $this->command("composer show $key -a --format=json");
+            if(!empty($result)) {
+                $data = json_decode($result, true);
+                $composerPackages[] = ['name' => $data['name'], 'description' => $data['description'], 'current' => $package, 'latest' => \Composer\InstalledVersions::getPrettyVersion($data['name'])];
+            }
+        }
+        return $composerPackages ?? [];
     }
 
     private function runningInConsole(): bool

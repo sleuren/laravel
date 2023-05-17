@@ -101,7 +101,7 @@ class ServiceProvider extends BaseServiceProvider
         $this->app->singleton(LogRecorder::class, function (Application $app): LogRecorder {
             return new LogRecorder(
                 $app,
-                200,
+                50,
             );
         });
 
@@ -119,7 +119,7 @@ class ServiceProvider extends BaseServiceProvider
         $this->app->singleton(JobRecorder::class, function (Application $app): JobRecorder {
             return new JobRecorder(
                 $app,
-                5
+                50
             );
         });
     }
