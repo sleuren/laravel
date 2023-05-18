@@ -20,7 +20,6 @@ class SleurenHandler extends AbstractProcessingHandler
     public function __construct(Sleuren $sleuren, $level = Logger::ERROR, bool $bubble = true)
     {
         $this->sleuren = $sleuren;
-
         parent::__construct($level, $bubble);
     }
 
@@ -33,7 +32,6 @@ class SleurenHandler extends AbstractProcessingHandler
             $this->sleuren->handle(
                 $record['context']['exception']
             );
-
             return;
         }
     }

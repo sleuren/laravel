@@ -4,8 +4,6 @@ namespace Sleuren;
 
 use Monolog\Logger;
 use Sleuren\Commands\TestCommand;
-use Illuminate\Support\Facades\Blade;
-use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Application;
 use Sleuren\Recorders\JobRecorder\JobRecorder;
 use Sleuren\Recorders\LogRecorder\LogRecorder;
@@ -27,9 +25,6 @@ class ServiceProvider extends BaseServiceProvider
             ]);
         }
 
-        // Register views
-        $this->app['view']->addNamespace('sleuren', __DIR__ . '/../resources/views');
-
         // Register facade
         if (class_exists(\Illuminate\Foundation\AliasLoader::class)) {
             $loader = \Illuminate\Foundation\AliasLoader::getInstance();
@@ -41,12 +36,8 @@ class ServiceProvider extends BaseServiceProvider
             TestCommand::class,
         ]);
 
-        // Map any routes
-        $this->mapSleurenApiRoutes();
+        // Register recorders
         $this->startRecorders();
-
-        // Create an alias to the js-client.blade.php include
-        Blade::include('sleuren::js-client', 'Sleuren');
     }
 
     /**
@@ -55,6 +46,7 @@ class ServiceProvider extends BaseServiceProvider
     public function register()
     {
         $this->mergeConfigFrom(__DIR__ . '/../config/sleuren.php', 'sleuren');
+
         $this->registerRecorders();
 
         $this->app->singleton('sleuren', function ($app) {
@@ -73,20 +65,6 @@ class ServiceProvider extends BaseServiceProvider
         }
 
     }
-
-    protected function mapSleurenApiRoutes()
-    {
-        Route::group(
-            [
-                'namespace' => '\Sleuren\Http\Controllers',
-                'prefix' => 'sleuren-api'
-            ],
-            function ($router) {
-                require __DIR__ . '/../routes/api.php';
-            }
-        );
-    }
-
     protected function startRecorders(): void
     {
         foreach ($this->app->config['sleuren.recorders'] ?? [] as $recorder) {

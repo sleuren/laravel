@@ -1,3 +1,0 @@
-<script defer>
-    class Sleuren{constructor(){window.addEventListener("error",(t=>{this.send(t)}))}send(t){return new Promise((function(s,e){let n=t.error.stack,o=t.error.toString();n&&(o+="\n"+n);let r={message:t.message,exception:o,file:t.filename,url:window.location.origin+window.location.pathname,line:t.lineno,column:t.colno,error:t.message,stack:t.error.stack},a=new XMLHttpRequest;a.open("POST",window.location.origin+"/sleuren-api/js-report",!0),a.setRequestHeader("Content-Type","application/json;charset=UTF-8"),a.onload=function(){this.status>=200&&this.status<300?s(a.response):e({status:this.status,statusText:a.statusText})},a.onerror=function(){e({status:this.status,statusText:a.statusText})},a.send(JSON.stringify(r))}))}}new Sleuren;
-</script>
